@@ -5,6 +5,9 @@
   --navy: #0c2242;
   --blue: #29b3ff;
   --sky: #d7efff;
+  --hero-bg: radial-gradient(ellipse 80% 60% at 20% 10%, rgba(41, 179, 255, 0.18) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 80% at 80% 80%, rgba(12, 34, 66, 0.12) 0%, transparent 60%),
+    #0c2242;
   --page-bg: #ffffff;
   --page-text: #0c2242;
   --muted-text: #8b93a3;
@@ -19,6 +22,9 @@
 }
 
 html[data-theme="dark"] {
+  --hero-bg: radial-gradient(ellipse 80% 60% at 20% 10%, rgba(41, 179, 255, 0.12) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 80% at 80% 80%, rgba(12, 34, 66, 0.18) 0%, transparent 60%),
+    #040b18;
   --page-bg: #050b16;
   --page-text: #e6f0ff;
   --muted-text: rgba(255, 255, 255, 0.6);

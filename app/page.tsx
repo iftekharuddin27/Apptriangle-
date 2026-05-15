@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import apptriangleLogo from "../logo/Apptriengle logo.png";
 
 type Service = {
@@ -231,11 +231,28 @@ function StatItem({ num, suffix, label }: Stat) {
 export default function ApptrianglePage() {
   const scrolled = useScrollNav();
   useFadeUp();
-  const [theme, setTheme] = useState<"light" | "dark">(() => {
-    if (typeof document === "undefined") return "light";
-    const current = document.documentElement.getAttribute("data-theme");
-    return current === "dark" ? "dark" : "light";
-  });
+  const theme = useSyncExternalStore(
+    onStoreChange => {
+      if (typeof document === "undefined") return () => {};
+      const observer = new MutationObserver(onStoreChange);
+      observer.observe(document.documentElement, {
+        attributes: true,
+        attributeFilter: ["data-theme"],
+      });
+      window.addEventListener("storage", onStoreChange);
+      return () => {
+        observer.disconnect();
+        window.removeEventListener("storage", onStoreChange);
+      };
+    },
+    () => {
+      if (typeof document === "undefined") return "light";
+      return document.documentElement.getAttribute("data-theme") === "dark"
+        ? "dark"
+        : "light";
+    },
+    () => "light",
+  );
   const [form, setForm] = useState<ContactFormState>({
     name: "",
     company: "",
@@ -248,7 +265,6 @@ export default function ApptrianglePage() {
     const nextTheme = theme === "dark" ? "light" : "dark";
     document.documentElement.setAttribute("data-theme", nextTheme);
     window.localStorage.setItem("theme", nextTheme);
-    setTheme(nextTheme);
   };
 
   const navClassName = `fixed top-0 left-0 right-0 z-100 flex h-18 items-center justify-between px-[5vw] transition-[background,box-shadow] duration-300 ${
@@ -268,11 +284,6 @@ export default function ApptrianglePage() {
     if (name === "AnyDesk") return 60;
     return 40;
   };
-
-  const heroBackground =
-    theme === "dark"
-      ? "radial-gradient(ellipse 80% 60% at 20% 10%, rgba(41,179,255,0.12) 0%, transparent 60%), radial-gradient(ellipse 60% 80% at 80% 80%, rgba(12,34,66,0.18) 0%, transparent 60%), #040b18"
-      : "radial-gradient(ellipse 80% 60% at 20% 10%, rgba(41,179,255,0.18) 0%, transparent 60%), radial-gradient(ellipse 60% 80% at 80% 80%, rgba(12,34,66,0.12) 0%, transparent 60%), #0c2242";
 
   return (
     <>
@@ -374,7 +385,7 @@ export default function ApptrianglePage() {
       {/* ── HERO ── */}
       <section
         className="relative flex min-h-screen items-center overflow-hidden px-[5vw] pb-20 pt-30"
-        style={{ background: heroBackground }}
+        style={{ background: "var(--hero-bg)" }}
       >
         <div className="relative z-10 max-w-160">
           <div className="mb-7 inline-flex items-center gap-2 rounded-full border border-[rgba(41,179,255,0.3)] bg-[rgba(41,179,255,0.15)] px-4 py-1.5 text-[13px] font-medium text-(--blue)">
@@ -428,15 +439,6 @@ export default function ApptrianglePage() {
 
       </section>
 
-      {/* ── STATS ── */}
-      <div className="border-y border-(--border) bg-(--surface) px-[5vw] py-12">
-        <div className="mx-auto grid max-w-275 grid-cols-2 gap-8 text-center sm:grid-cols-3 lg:grid-cols-5">
-          {STATS.map(stat => (
-            <StatItem key={stat.label} {...stat} />
-          ))}
-        </div>
-      </div>
-
       {/* ── SERVICES ── */}
       <section id="services" className="px-[5vw] py-24">
         <div className="mx-auto max-w-290">
@@ -456,7 +458,7 @@ export default function ApptrianglePage() {
             {SERVICES.map(service => (
               <div
                 key={service.title}
-                className="group relative overflow-hidden bg-(--surface) p-9 transition hover:bg-(--sky)"
+                className="group relative overflow-hidden bg-(--surface) p-9 transition hover:bg-(--surface-alt)"
               >
                 <span className="absolute bottom-0 left-0 right-0 h-0.75 origin-left scale-x-0 bg-linear-to-r from-(--blue) to-transparent transition group-hover:scale-x-100" />
                 <div className="mb-5 flex h-12 w-12 items-center justify-center rounded-xl bg-[linear-gradient(135deg,var(--sky),rgba(41,179,255,0.2))] text-[22px] transition group-hover:-rotate-3 group-hover:scale-110">

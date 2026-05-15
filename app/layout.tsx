@@ -14,7 +14,8 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" data-theme="light" suppressHydrationWarning>
-      <head>
+      <head />
+      <body>
         <Script id="theme-init" strategy="beforeInteractive">
           {`(function(){
   try {
@@ -25,8 +26,8 @@ export default function RootLayout({
   } catch (e) {}
 })();`}
         </Script>
-      </head>
-      <body>{children}</body>
+        {children}
+      </body>
     </html>
   );
 }
