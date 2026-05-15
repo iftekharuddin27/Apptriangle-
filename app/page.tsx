@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 import apptriangleLogo from "../logo/Apptriengle logo.png";
 
@@ -211,12 +212,17 @@ function StatItem({ num, suffix, label }: Stat) {
   }, []);
 
   return (
-    <div ref={ref} style={{ textAlign: "center" }}>
-      <div className="stat-num">
+    <div ref={ref} className="text-center">
+      <div
+        className="text-5xl font-bold leading-none text-(--page-text)"
+        style={{ fontFamily: "var(--font-display)" }}
+      >
         {val}
-        <span>{suffix}</span>
+        <span className="text-(--blue)">{suffix}</span>
       </div>
-      <div className="stat-label">{label}</div>
+      <div className="mt-1 text-[13px] font-medium uppercase tracking-wider text-(--muted-text)">
+        {label}
+      </div>
     </div>
   );
 }
@@ -225,7 +231,11 @@ function StatItem({ num, suffix, label }: Stat) {
 export default function ApptrianglePage() {
   const scrolled = useScrollNav();
   useFadeUp();
-  const [theme, setTheme] = useState<"light" | "dark">("light");
+  const [theme, setTheme] = useState<"light" | "dark">(() => {
+    if (typeof document === "undefined") return "light";
+    const current = document.documentElement.getAttribute("data-theme");
+    return current === "dark" ? "dark" : "light";
+  });
   const [form, setForm] = useState<ContactFormState>({
     name: "",
     company: "",
@@ -234,13 +244,6 @@ export default function ApptrianglePage() {
     message: "",
   });
 
-  useEffect(() => {
-    const current = document.documentElement.getAttribute("data-theme");
-    if (current === "dark" || current === "light") {
-      setTheme(current);
-    }
-  }, []);
-
   const toggleTheme = () => {
     const nextTheme = theme === "dark" ? "light" : "dark";
     document.documentElement.setAttribute("data-theme", nextTheme);
@@ -248,48 +251,95 @@ export default function ApptrianglePage() {
     setTheme(nextTheme);
   };
 
+  const navClassName = `fixed top-0 left-0 right-0 z-100 flex h-18 items-center justify-between px-[5vw] transition-[background,box-shadow] duration-300 ${
+    scrolled
+      ? "bg-[rgba(12,34,66,0.96)] backdrop-blur-md shadow-[0_2px_24px_rgba(41,179,255,0.12)]"
+      : "bg-transparent"
+  }`;
+
+  const toggleClassName = `inline-flex items-center gap-2 rounded-full border border-white/20 px-3 py-1.5 text-[11px] font-bold uppercase tracking-widest transition hover:-translate-y-px ${
+    theme === "light"
+      ? "bg-[#1e293b] text-[#f8fafc]"
+      : "bg-[#f1f5f9] text-[#1e293b]"
+  }`;
+
+  const partnerHeight = (name: string) => {
+    if (name === "Sectigo") return 70;
+    if (name === "AnyDesk") return 60;
+    return 40;
+  };
+
+  const heroBackground =
+    theme === "dark"
+      ? "radial-gradient(ellipse 80% 60% at 20% 10%, rgba(41,179,255,0.12) 0%, transparent 60%), radial-gradient(ellipse 60% 80% at 80% 80%, rgba(12,34,66,0.18) 0%, transparent 60%), #040b18"
+      : "radial-gradient(ellipse 80% 60% at 20% 10%, rgba(41,179,255,0.18) 0%, transparent 60%), radial-gradient(ellipse 60% 80% at 80% 80%, rgba(12,34,66,0.12) 0%, transparent 60%), #0c2242";
+
   return (
     <>
       {/* ── NAV ── */}
-      <nav className={scrolled ? "scrolled" : "top"}>
-        <a href="#" className="nav-logo">
-          <img 
-            src={apptriangleLogo.src} 
-            alt="Apptriangle Logo" 
-            style={{ height: "70px", width: "auto", objectFit: "contain" }} 
+      <nav className={navClassName}>
+        <a href="#" className="flex items-center gap-2">
+          <Image
+            src={apptriangleLogo}
+            alt="Apptriangle Logo"
+            className="h-17.5 w-auto"
+            priority
+            sizes="(max-width: 768px) 140px, 200px"
           />
         </a>
-        <ul className="nav-links">
+        <ul className="hidden items-center gap-8 text-sm font-medium text-white/80 lg:flex">
           <li>
-            <a href="#services">Services</a>
+            <a
+              href="#services"
+              className="transition-colors hover:text-(--blue)"
+            >
+              Services
+            </a>
           </li>
           <li>
-            <a href="#about">About</a>
+            <a
+              href="#about"
+              className="transition-colors hover:text-(--blue)"
+            >
+              About
+            </a>
           </li>
           <li>
-            <a href="#partners">Partners</a>
+            <a
+              href="#partners"
+              className="transition-colors hover:text-(--blue)"
+            >
+              Partners
+            </a>
           </li>
           <li>
-            <a href="#contact">Contact</a>
+            <a
+              href="#contact"
+              className="transition-colors hover:text-(--blue)"
+            >
+              Contact
+            </a>
           </li>
           <li>
-            <a href="#contact" className="nav-cta">
+            <a
+              href="#contact"
+              className="rounded-md bg-(--blue) px-5 py-2 text-sm font-semibold text-(--navy) transition hover:-translate-y-px hover:bg-[#4fc5ff]"
+            >
               Schedule a Call
             </a>
           </li>
         </ul>
         <button
           type="button"
-          className="theme-toggle"
+          className={toggleClassName}
           onClick={toggleTheme}
-          style={{
-            backgroundColor: theme === "light" ? "#1e293b" : "#f1f5f9",
-            color: theme === "light" ? "#f8fafc" : "#1e293b",
-          }}
         >
-          <span className="toggle-icon" aria-hidden="true">
+          <span
+            className="flex h-7 w-7 items-center justify-center rounded-full bg-white text-[#f39a1e] shadow-[0_8px_16px_rgba(12,34,66,0.25)]"
+            aria-hidden="true"
+          >
             {theme === "light" ? (
-              <svg viewBox="0 0 24 24" aria-hidden="true" style={{ color: "black" }}>
+              <svg viewBox="0 0 24 24" aria-hidden="true" className="h-4.5 w-4.5 text-black">
                 <path
                   d="M15.5 3.5a8 8 0 1 0 5 13.7 7 7 0 1 1-5-13.7Z"
                   fill="currentColor"
@@ -304,7 +354,7 @@ export default function ApptrianglePage() {
                 />
               </svg>
             ) : (
-              <svg viewBox="0 0 24 24" aria-hidden="true" style={{ color: "black" }}>
+              <svg viewBox="0 0 24 24" aria-hidden="true" className="h-4.5 w-4.5 text-black">
                 <circle cx="12" cy="12" r="5" fill="currentColor" />
                 <path
                   d="M12 2.5v3M12 18.5v3M4.5 12h3M16.5 12h3M5.2 5.2l2.1 2.1M16.7 16.7l2.1 2.1M18.8 5.2l-2.1 2.1M7.3 16.7l-2.1 2.1"
@@ -315,47 +365,62 @@ export default function ApptrianglePage() {
               </svg>
             )}
           </span>
-          <span className="toggle-label">
+          <span className="leading-none">
             {theme === "dark" ? "Light Mode" : "Dark Mode"}
           </span>
         </button>
       </nav>
 
       {/* ── HERO ── */}
-      <section className="hero mesh-bg">
-        <div className="hero-content">
-          <div className="hero-badge">
-            <span className="hero-badge-dot" />
+      <section
+        className="relative flex min-h-screen items-center overflow-hidden px-[5vw] pb-20 pt-30"
+        style={{ background: heroBackground }}
+      >
+        <div className="relative z-10 max-w-160">
+          <div className="mb-7 inline-flex items-center gap-2 rounded-full border border-[rgba(41,179,255,0.3)] bg-[rgba(41,179,255,0.15)] px-4 py-1.5 text-[13px] font-medium text-(--blue)">
+            <span className="h-1.5 w-1.5 rounded-full bg-(--blue) animate-[pulse_2s_infinite]" />
             7+ Years of Technology Excellence
           </div>
-          <h1 className="sui">
+          <h1
+            className="mb-6 text-[clamp(44px,6vw,76px)] font-semibold leading-[1.08] text-white"
+            style={{ fontFamily: "var(--font-display)" }}
+          >
             Technology
             <br />
-            <span>on Demand</span>
+            <span className="text-(--blue)">on Demand</span>
           </h1>
-          <p>
+          <p className="mb-10 max-w-130 text-lg leading-[1.7] text-white/70">
             We are a global technology service provider dedicated to empowering
             businesses with cutting-edge solutions. Our expert team is
             available 24/7 to attend to your needs.
           </p>
-          <div className="hero-actions">
-            <a href="#services" className="btn-primary">
+          <div className="flex flex-wrap gap-4">
+            <a
+              href="#services"
+              className="inline-flex items-center gap-2 rounded-lg bg-(--blue) px-8 py-3.5 text-[15px] font-semibold text-(--navy) transition hover:-translate-y-0.5 hover:bg-[#4fc5ff] hover:shadow-[0_8px_24px_rgba(41,179,255,0.4)]"
+            >
               Explore Our Services →
             </a>
-            <a href="#contact" className="btn-outline">
+            <a
+              href="#contact"
+              className="inline-flex items-center gap-2 rounded-lg border border-white/30 px-8 py-3.5 text-[15px] font-medium text-white transition hover:border-(--blue) hover:bg-[rgba(41,179,255,0.07)] hover:text-(--blue)"
+            >
               Schedule a Call
             </a>
           </div>
         </div>
 
         {/* Background grid decoration */}
-        <div className="hero-visual">
-          <div className="hero-grid">
+        <div className="pointer-events-none absolute -right-20 top-1/2 hidden w-[55vw] max-w-175 -translate-y-1/2 opacity-[0.13] lg:block">
+          <div className="grid grid-cols-8 gap-4">
             {Array.from({ length: 64 }).map((_, i) => (
               <div
                 key={i}
-                className="hero-grid-cell"
-                style={{ animationDelay: `${(i * 0.07) % 2}s` }}
+                className="aspect-square rounded-sm border border-(--blue) animate-[fadeGrid_3s_ease-in-out_infinite_alternate]"
+                style={{
+                  animationDelay: `${(i * 0.07) % 2}s`,
+                  background: i % 3 === 0 ? "rgba(41, 179, 255, 0.15)" : undefined,
+                }}
               />
             ))}
           </div>
@@ -364,8 +429,8 @@ export default function ApptrianglePage() {
       </section>
 
       {/* ── STATS ── */}
-      <div className="stats-bar">
-        <div className="stats-inner">
+      <div className="border-y border-(--border) bg-(--surface) px-[5vw] py-12">
+        <div className="mx-auto grid max-w-275 grid-cols-2 gap-8 text-center sm:grid-cols-3 lg:grid-cols-5">
           {STATS.map(stat => (
             <StatItem key={stat.label} {...stat} />
           ))}
@@ -373,35 +438,40 @@ export default function ApptrianglePage() {
       </div>
 
       {/* ── SERVICES ── */}
-      <section id="services">
-        <div className="container">
+      <section id="services" className="px-[5vw] py-24">
+        <div className="mx-auto max-w-290">
           <div className="fade-up">
-            <h2 className="section-title sui">Our Services</h2>
-            <p className="section-sub">
+            <h2
+              className="mb-4 text-[clamp(32px,4vw,52px)] font-semibold leading-[1.15] text-(--page-text)"
+              style={{ fontFamily: "var(--font-display)" }}
+            >
+              Our Services
+            </h2>
+            <p className="mb-14 max-w-140 text-[17px] leading-[1.7] text-(--muted-text)">
               Reliable and innovative services designed for your business
               success, delivered by experts who care.
             </p>
           </div>
-          <div className="services-grid fade-up">
+          <div className="grid grid-cols-1 gap-0.5 overflow-hidden rounded-2xl border border-(--grid-border) bg-(--grid-border) sm:grid-cols-2 lg:grid-cols-3 fade-up">
             {SERVICES.map(service => (
-              <div key={service.title} className="service-card">
-                <div 
-                  className="service-icon"
-                  style={{
-                    backgroundColor: "#f8fafc",
-                    width: "48px",
-                    height: "48px",
-                    borderRadius: "12px",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    marginBottom: "20px"
-                  }}
+              <div
+                key={service.title}
+                className="group relative overflow-hidden bg-(--surface) p-9 transition hover:bg-(--sky)"
+              >
+                <span className="absolute bottom-0 left-0 right-0 h-0.75 origin-left scale-x-0 bg-linear-to-r from-(--blue) to-transparent transition group-hover:scale-x-100" />
+                <div className="mb-5 flex h-12 w-12 items-center justify-center rounded-xl bg-[linear-gradient(135deg,var(--sky),rgba(41,179,255,0.2))] text-[22px] transition group-hover:-rotate-3 group-hover:scale-110">
+                  {service.icon}
+                </div>
+                <h3 className="mb-3 text-lg font-semibold text-(--page-text)">
+                  {service.title}
+                </h3>
+                <p className="text-sm leading-[1.7] text-(--muted-text)">
+                  {service.desc}
+                </p>
+                <a
+                  href="#contact"
+                  className="mt-5 inline-flex items-center gap-1.5 text-sm font-medium text-(--blue) transition group-hover:gap-2.5"
                 >
-                  {service.icon}</div>
-                <h3>{service.title}</h3>
-                <p>{service.desc}</p>
-                <a href="#contact" className="service-link">
                   Learn more <span>→</span>
                 </a>
               </div>
@@ -411,63 +481,55 @@ export default function ApptrianglePage() {
       </section>
 
       {/* ── ABOUT ── */}
-      <section id="about" className="about-section">
-        <div className="container">
-          <div className="about-grid">
+      <section id="about" className="relative overflow-hidden bg-(--navy) px-[5vw] py-24 text-white">
+        <div className="absolute -right-50 -top-50 h-150 w-150 rounded-full bg-[radial-gradient(circle,rgba(41,179,255,0.12)_0%,transparent_70%)]" />
+        <div className="relative mx-auto max-w-290">
+          <div className="grid gap-12 lg:grid-cols-[1fr_1fr] lg:items-center">
             <div className="fade-up">
-              <h2 className="section-title sui">About Apptriangle</h2>
-              <p className="section-sub">
+              <h2
+                className="mb-4 text-[clamp(32px,4vw,52px)] font-semibold leading-[1.15] text-white"
+                style={{ fontFamily: "var(--font-display)" }}
+              >
+                About Apptriangle
+              </h2>
+              <p className="mb-10 max-w-140 text-[17px] leading-[1.7] text-white/60">
                 We are a global leading technology service provider dedicated
                 to empowering businesses with cutting-edge solutions. With a
                 dynamic team of industry experts and a passion for innovation.
               </p>
-              <ul className="about-list">
-                <li>
-                  <span className="check">✦</span> Professional Services with
-                  certified experts
+              <ul className="mb-10 space-y-3">
+                <li className="flex items-center gap-3 border-b border-white/10 py-2 text-[15px] text-white/80 last:border-b-0">
+                  <span className="text-lg text-(--blue)">✦</span>
+                  Professional Services with certified experts
                 </li>
-                <li>
-                  <span className="check">✦</span> Affordable pricing with
-                  transparent models
+                <li className="flex items-center gap-3 border-b border-white/10 py-2 text-[15px] text-white/80 last:border-b-0">
+                  <span className="text-lg text-(--blue)">✦</span>
+                  Affordable pricing with transparent models
                 </li>
-                <li>
-                  <span className="check">✦</span> Quality solutions built to
-                  scale with you
+                <li className="flex items-center gap-3 border-b border-white/10 py-2 text-[15px] text-white/80 last:border-b-0">
+                  <span className="text-lg text-(--blue)">✦</span>
+                  Quality solutions built to scale with you
                 </li>
-                <li>
-                  <span className="check">✦</span> 24/7 support across time
-                  zones globally
+                <li className="flex items-center gap-3 border-b border-white/10 py-2 text-[15px] text-white/80 last:border-b-0">
+                  <span className="text-lg text-(--blue)">✦</span>
+                  24/7 support across time zones globally
                 </li>
               </ul>
-              <a href="#contact" className="btn-primary">
+              <a
+                href="#contact"
+                className="inline-flex items-center gap-2 rounded-lg bg-(--blue) px-8 py-3.5 text-[15px] font-semibold text-(--navy) transition hover:-translate-y-0.5 hover:bg-[#4fc5ff]"
+              >
                 Get in Touch →
               </a>
             </div>
-            <div className="about-visual fade-up">
+            <div className="relative hidden items-center justify-center lg:flex fade-up">
+              <div className="absolute left-1/2 top-1/2 h-100 w-100 -translate-x-1/2 -translate-y-1/2 rounded-full border border-[rgba(41,179,255,0.2)] animate-[spinRing_20s_linear_infinite]" />
               <div
-                className="about-ring"
-                style={{
-                  width: 400,
-                  height: 400,
-                  top: "50%",
-                  left: "50%",
-                  transform: "translate(-50%,-50%)",
-                }}
+                className="absolute left-1/2 top-1/2 h-75 w-75 -translate-x-1/2 -translate-y-1/2 rounded-full border border-[rgba(41,179,255,0.2)] animate-[spinRing_15s_linear_infinite]"
+                style={{ animationDirection: "reverse" }}
               />
-              <div
-                className="about-ring"
-                style={{
-                  width: 300,
-                  height: 300,
-                  top: "50%",
-                  left: "50%",
-                  transform: "translate(-50%,-50%)",
-                  animationDirection: "reverse",
-                  animationDuration: "15s",
-                }}
-              />
-              <div className="about-triangle-big">
-                <div className="about-triangle-sm" />
+              <div className="relative h-85 w-85 [clip-path:polygon(50%_0%,0%_100%,100%_100%)] bg-[linear-gradient(135deg,rgba(41,179,255,0.15),rgba(12,34,66,0.5))]">
+                <div className="absolute left-1/2 top-7.5 h-40 w-40 -translate-x-1/2 [clip-path:polygon(50%_0%,0%_100%,100%_100%)] bg-(--blue) opacity-20" />
               </div>
             </div>
           </div>
@@ -475,38 +537,41 @@ export default function ApptrianglePage() {
       </section>
 
       {/* ── PARTNERS ── */}
-      <section id="partners" className="partners-section">
-        <div className="container">
-          <div className="fade-up" style={{ textAlign: "center", marginBottom: 48 }}>
-            <h2 className="section-title sui" style={{ margin: "0 auto" }}>
+      <section id="partners" className="bg-(--surface-alt) px-[5vw] py-24">
+        <div className="mx-auto max-w-290">
+          <div className="fade-up text-center mb-12">
+            <h2
+              className="mx-auto text-[clamp(32px,4vw,52px)] font-semibold leading-[1.15] text-(--page-text)"
+              style={{ fontFamily: "var(--font-display)" }}
+            >
               Our Partners
             </h2>
           </div>
         </div>
-        <div className="partners-track fade-up">
-          <div className="partners-inner">
+        <div
+          className="fade-up overflow-hidden"
+          style={{
+            maskImage:
+              "linear-gradient(90deg,transparent,black 10%,black 90%,transparent)",
+            WebkitMaskImage:
+              "linear-gradient(90deg,transparent,black 10%,black 90%,transparent)",
+          }}
+        >
+          <div className="flex w-max items-center gap-16 animate-[marquee_30s_linear_infinite]">
             {[...PARTNERS, ...PARTNERS].map((partner, i) => (
-              <div 
-                key={i} 
-                className="partner-badge" 
-                style={{ 
-                  backgroundColor: "#1e293b", 
-                  padding: "12px", 
-                  borderRadius: "8px", 
-                  display: "inline-flex", 
-                  alignItems: "center", 
-                  justifyContent: "center" 
-                }}
+              <div
+                key={i}
+                className="inline-flex items-center justify-center rounded-lg border border-(--border) bg-(--navy) px-3 py-3 shadow-[0_2px_8px_rgba(12,34,66,0.04)]"
               >
-              <img 
-                src={partner.logo} 
-                alt={`${partner.name} logo`} 
-                style={{ 
-                  height: partner.name === "Sectigo" ? "70px" : (partner.name === "AnyDesk" ? "60px" : "40px"),
-                  width: "auto", 
-                  objectFit: "contain" 
-                }}
-              />
+                <Image
+                  src={partner.logo}
+                  alt={`${partner.name} logo`}
+                  width={200}
+                  height={partnerHeight(partner.name)}
+                  className="w-auto object-contain"
+                  style={{ height: `${partnerHeight(partner.name)}px` }}
+                  sizes="(max-width: 768px) 140px, 200px"
+                />
               </div>
             ))}
           </div>
@@ -514,25 +579,46 @@ export default function ApptrianglePage() {
       </section>
 
       {/* ── TESTIMONIALS ── */}
-      <section className="testimonials-section" style={{ background: "var(--white)" }}>
-        <div className="container">
-          <div className="fade-up" style={{ textAlign: "center", marginBottom: 56 }}>
-            <h2 className="section-title sui">What Our Clients Say</h2>
+      <section className="bg-(--surface) px-[5vw] py-24">
+        <div className="mx-auto max-w-290">
+          <div className="fade-up text-center mb-14">
+            <h2
+              className="text-[clamp(32px,4vw,52px)] font-semibold leading-[1.15] text-(--page-text)"
+              style={{ fontFamily: "var(--font-display)" }}
+            >
+              What Our Clients Say
+            </h2>
           </div>
-          <div className="testimonials-grid">
+          <div className="grid gap-6 lg:grid-cols-3">
             {TESTIMONIALS.map((testimonial, i) => (
               <div
                 key={i}
-                className="testimonial-card fade-up"
+                className="relative rounded-2xl border border-(--border) bg-(--surface) p-9 fade-up"
                 style={{ transitionDelay: `${i * 0.1}s` }}
               >
-                <div className="stars">{"★".repeat(testimonial.stars)}</div>
-                <p>"{testimonial.text}"</p>
-                <div className="testimonial-author">
-                  <div className="author-avatar">{testimonial.name[0]}</div>
+                <span
+                  className="pointer-events-none absolute right-7 top-5 text-[80px] font-bold leading-none text-(--sky)"
+                  style={{ fontFamily: "var(--font-display)" }}
+                >
+                  &ldquo;
+                </span>
+                <div className="mb-4 text-base text-[#f5a623]">
+                  {"★".repeat(testimonial.stars)}
+                </div>
+                <p className="mb-6 text-[15px] leading-[1.75] text-(--muted-text)">
+                  &ldquo;{testimonial.text}&rdquo;
+                </p>
+                <div className="flex items-center gap-3">
+                  <div className="flex h-11 w-11 items-center justify-center rounded-full bg-[linear-gradient(135deg,var(--blue),var(--navy))] text-base font-semibold text-white">
+                    {testimonial.name[0]}
+                  </div>
                   <div>
-                    <div className="author-name">{testimonial.name}</div>
-                    <div className="author-role">{testimonial.role}</div>
+                    <div className="text-sm font-semibold text-(--page-text)">
+                      {testimonial.name}
+                    </div>
+                    <div className="text-xs text-(--muted-text)">
+                      {testimonial.role}
+                    </div>
                   </div>
                 </div>
               </div>
@@ -542,20 +628,30 @@ export default function ApptrianglePage() {
       </section>
 
       {/* ── CTA BANNER ── */}
-      <section className="cta-section">
-        <div className="container">
-          <h2 className="sui">Ready to Transform Your Business?</h2>
-          <p>
-            Let's build something extraordinary together. Our team is ready
+      <section className="relative overflow-hidden bg-[linear-gradient(135deg,var(--navy)_0%,#1a3a6b_100%)] px-[5vw] py-24 text-center">
+        <div className="absolute -left-50 -top-50 h-125 w-125 rounded-full bg-[radial-gradient(circle,rgba(41,179,255,0.15)_0%,transparent_70%)]" />
+        <div className="absolute -bottom-37.5 -right-25 h-100 w-100 rounded-full bg-[radial-gradient(circle,rgba(41,179,255,0.1)_0%,transparent_70%)]" />
+        <div className="relative mx-auto max-w-290">
+          <h2
+            className="mb-4 text-[clamp(28px,3.5vw,48px)] font-semibold text-white"
+            style={{ fontFamily: "var(--font-display)" }}
+          >
+            Ready to Transform Your Business?
+          </h2>
+          <p className="mb-10 text-lg text-white/65">
+            Let&rsquo;s build something extraordinary together. Our team is ready
             when you are.
           </p>
-          <div className="cta-btns">
-            <a href="#contact" className="btn-primary">
+          <div className="flex flex-wrap justify-center gap-4">
+            <a
+              href="#contact"
+              className="inline-flex items-center gap-2 rounded-lg bg-(--blue) px-8 py-3.5 text-[15px] font-semibold text-(--navy) transition hover:-translate-y-0.5 hover:bg-[#4fc5ff]"
+            >
               Contact Us Today →
             </a>
             <a
               href="https://outlook.office.com/book/MeetwithApptriangle@apptriangle.com/"
-              className="btn-outline"
+              className="inline-flex items-center gap-2 rounded-lg border border-white/30 px-8 py-3.5 text-[15px] font-medium text-white transition hover:border-(--blue) hover:bg-[rgba(41,179,255,0.07)] hover:text-(--blue)"
               target="_blank"
               rel="noreferrer"
             >
@@ -566,59 +662,82 @@ export default function ApptrianglePage() {
       </section>
 
       {/* ── CONTACT ── */}
-      <section id="contact">
-        <div className="container">
-          <div className="contact-grid">
+      <section id="contact" className="px-[5vw] py-24">
+        <div className="mx-auto max-w-290">
+          <div className="grid gap-12 lg:grid-cols-[1fr_1.2fr]">
             <div className="fade-up">
-              <span className="section-tag">Get in Touch</span>
-              <h2 className="section-title sui">Let's Work Together</h2>
-              <p
-                style={{
-                  color: "var(--grey)",
-                  lineHeight: 1.7,
-                  marginBottom: 40,
-                }}
+              <span className="mb-4 inline-block text-[13px] font-semibold uppercase tracking-widest text-(--blue)">
+                Get in Touch
+              </span>
+              <h2
+                className="mb-4 text-[clamp(32px,4vw,52px)] font-semibold leading-[1.15] text-(--page-text)"
+                style={{ fontFamily: "var(--font-display)" }}
               >
-                Have a project in mind? We'd love to hear about it. Reach out
-                and we'll get back to you within 24 hours.
+                Let&rsquo;s Work Together
+              </h2>
+              <p className="mb-10 text-[17px] leading-[1.7] text-(--muted-text)">
+                Have a project in mind? We&rsquo;d love to hear about it. Reach out
+                and we&rsquo;ll get back to you within 24 hours.
               </p>
-              <div className="contact-info-item">
-                <div className="contact-info-icon">📍</div>
+              <div className="mb-8 flex gap-4">
+                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2.5 bg-(--sky) text-lg text-(--blue)">
+                  📍
+                </div>
                 <div>
-                  <div className="contact-info-label">Bangladesh Office</div>
-                  <div className="contact-info-value">
+                  <div className="mb-1 text-[13px] uppercase tracking-wider text-(--muted-text)">
+                    Bangladesh Office
+                  </div>
+                  <div className="text-[15px] font-medium text-(--page-text)">
                     House 54, Road 8, Block D, Niketan, Gulshan-1, Dhaka-1212
                   </div>
                 </div>
               </div>
-              <div className="contact-info-item">
-                <div className="contact-info-icon">📍</div>
+              <div className="mb-8 flex gap-4">
+                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2.5 bg-(--sky) text-lg text-(--blue)">
+                  📍
+                </div>
                 <div>
-                  <div className="contact-info-label">Australia Office</div>
-                  <div className="contact-info-value">
+                  <div className="mb-1 text-[13px] uppercase tracking-wider text-(--muted-text)">
+                    Australia Office
+                  </div>
+                  <div className="text-[15px] font-medium text-(--page-text)">
                     2-10 Mount Street, North Sydney, NSW 2060
                   </div>
                 </div>
               </div>
-              <div className="contact-info-item">
-                <div className="contact-info-icon">📞</div>
+              <div className="mb-8 flex gap-4">
+                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2.5 bg-(--sky) text-lg text-(--blue)">
+                  📞
+                </div>
                 <div>
-                  <div className="contact-info-label">Phone</div>
-                  <div className="contact-info-value">+880 1717 888 388</div>
+                  <div className="mb-1 text-[13px] uppercase tracking-wider text-(--muted-text)">
+                    Phone
+                  </div>
+                  <div className="text-[15px] font-medium text-(--page-text)">
+                    +880 1717 888 388
+                  </div>
                 </div>
               </div>
-              <div className="contact-info-item">
-                <div className="contact-info-icon">✉️</div>
+              <div className="mb-8 flex gap-4">
+                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2.5 bg-(--sky) text-lg text-(--blue)">
+                  ✉️
+                </div>
                 <div>
-                  <div className="contact-info-label">Email</div>
-                  <div className="contact-info-value">info@apptriangle.com</div>
+                  <div className="mb-1 text-[13px] uppercase tracking-wider text-(--muted-text)">
+                    Email
+                  </div>
+                  <div className="text-[15px] font-medium text-(--page-text)">
+                    info@apptriangle.com
+                  </div>
                 </div>
               </div>
             </div>
-            <div className="contact-form fade-up">
-              <div className="form-row">
-                <div className="form-group">
-                  <label>Full Name *</label>
+            <div className="rounded-2xl bg-(--surface-alt) p-10 fade-up">
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div className="mb-5">
+                  <label className="mb-2 block text-[13px] font-medium text-(--page-text)">
+                    Full Name *
+                  </label>
                   <input
                     type="text"
                     placeholder="John Doe"
@@ -626,10 +745,13 @@ export default function ApptrianglePage() {
                     onChange={event =>
                       setForm({ ...form, name: event.target.value })
                     }
+                    className="w-full rounded-lg border border-(--input-border) bg-(--input-bg) px-4 py-3 text-sm text-(--page-text) outline-none transition focus:border-(--blue) focus:shadow-[0_0_0_3px_var(--input-focus)]"
                   />
                 </div>
-                <div className="form-group">
-                  <label>Company</label>
+                <div className="mb-5">
+                  <label className="mb-2 block text-[13px] font-medium text-(--page-text)">
+                    Company
+                  </label>
                   <input
                     type="text"
                     placeholder="Your company"
@@ -637,12 +759,15 @@ export default function ApptrianglePage() {
                     onChange={event =>
                       setForm({ ...form, company: event.target.value })
                     }
+                    className="w-full rounded-lg border border-(--input-border) bg-(--input-bg) px-4 py-3 text-sm text-(--page-text) outline-none transition focus:border-(--blue) focus:shadow-[0_0_0_3px_var(--input-focus)]"
                   />
                 </div>
               </div>
-              <div className="form-row">
-                <div className="form-group">
-                  <label>Contact Number *</label>
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div className="mb-5">
+                  <label className="mb-2 block text-[13px] font-medium text-(--page-text)">
+                    Contact Number *
+                  </label>
                   <input
                     type="tel"
                     placeholder="+1 234 567 890"
@@ -650,10 +775,13 @@ export default function ApptrianglePage() {
                     onChange={event =>
                       setForm({ ...form, phone: event.target.value })
                     }
+                    className="w-full rounded-lg border border-(--input-border) bg-(--input-bg) px-4 py-3 text-sm text-(--page-text) outline-none transition focus:border-(--blue) focus:shadow-[0_0_0_3px_var(--input-focus)]"
                   />
                 </div>
-                <div className="form-group">
-                  <label>Email Address *</label>
+                <div className="mb-5">
+                  <label className="mb-2 block text-[13px] font-medium text-(--page-text)">
+                    Email Address *
+                  </label>
                   <input
                     type="email"
                     placeholder="john@company.com"
@@ -661,53 +789,53 @@ export default function ApptrianglePage() {
                     onChange={event =>
                       setForm({ ...form, email: event.target.value })
                     }
+                    className="w-full rounded-lg border border-(--input-border) bg-(--input-bg) px-4 py-3 text-sm text-(--page-text) outline-none transition focus:border-(--blue) focus:shadow-[0_0_0_3px_var(--input-focus)]"
                   />
                 </div>
               </div>
-              <div className="form-group">
-                <label>Message</label>
+              <div className="mb-5">
+                <label className="mb-2 block text-[13px] font-medium text-(--page-text)">
+                  Message
+                </label>
                 <textarea
                   placeholder="Tell us about your project..."
                   value={form.message}
                   onChange={event =>
                     setForm({ ...form, message: event.target.value })
                   }
+                  className="min-h-30 w-full resize-y rounded-lg border border-(--input-border) bg-(--input-bg) px-4 py-3 text-sm text-(--page-text) outline-none transition focus:border-(--blue) focus:shadow-[0_0_0_3px_var(--input-focus)]"
                 />
               </div>
-              <button className="btn-submit">Send Message →</button>
+              <button className="w-full rounded-lg bg-(--navy) py-3.5 text-[15px] font-semibold text-white transition hover:-translate-y-0.5 hover:bg-[#1a3a6b]">
+                Send Message →
+              </button>
             </div>
           </div>
         </div>
       </section>
 
       {/* ── FOOTER ── */}
-      <footer>
-        <div className="footer-grid">
-          <div className="footer-brand">
-            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            <img 
-              src={apptriangleLogo.src} 
-              alt="Apptriangle Logo" 
-              style={{ height: "60px", width: "auto", objectFit: "contain" }} 
+      <footer className="bg-[#07152e] px-[5vw] pb-8 pt-16 text-white/60">
+        <div className="mx-auto mb-12 grid max-w-290 gap-12 sm:grid-cols-2 lg:grid-cols-[2fr_1fr_1fr_1fr]">
+          <div>
+            <div className="flex items-center gap-2">
+              <Image
+                src={apptriangleLogo}
+                alt="Apptriangle Logo"
+                className="h-15 w-auto"
+                sizes="120px"
               />
-              <span
-                style={{
-                  color: "white",
-                  fontSize: 18,
-                  fontWeight: 600,
-                  letterSpacing: "-0.02em",
-                }}
-              >
-              </span>
             </div>
-            <p>
+            <p className="mt-4 text-sm leading-[1.8]">
               Technology on Demand — empowering businesses worldwide with
               innovative, reliable technology services.
             </p>
           </div>
-          <div className="footer-col">
-            <h4>Services</h4>
-            <ul>
+          <div>
+            <h4 className="mb-5 text-[15px] font-semibold text-white">
+              Services
+            </h4>
+            <ul className="space-y-2 text-sm">
               {[
                 "Staff Augmentation",
                 "Managed IT",
@@ -716,14 +844,21 @@ export default function ApptrianglePage() {
                 "AI & ML",
               ].map(service => (
                 <li key={service}>
-                  <a href="#">{service}</a>
+                  <a
+                    href="#"
+                    className="text-white/50 transition hover:text-(--blue)"
+                  >
+                    {service}
+                  </a>
                 </li>
               ))}
             </ul>
           </div>
-          <div className="footer-col">
-            <h4>Company</h4>
-            <ul>
+          <div>
+            <h4 className="mb-5 text-[15px] font-semibold text-white">
+              Company
+            </h4>
+            <ul className="space-y-2 text-sm">
               {[
                 "About Us",
                 "Partners",
@@ -732,31 +867,51 @@ export default function ApptrianglePage() {
                 "Blogs",
               ].map(item => (
                 <li key={item}>
-                  <a href="#">{item}</a>
+                  <a
+                    href="#"
+                    className="text-white/50 transition hover:text-(--blue)"
+                  >
+                    {item}
+                  </a>
                 </li>
               ))}
             </ul>
           </div>
-          <div className="footer-col">
-            <h4>Contact</h4>
-            <ul>
+          <div>
+            <h4 className="mb-5 text-[15px] font-semibold text-white">
+              Contact
+            </h4>
+            <ul className="space-y-2 text-sm">
               <li>
-                <a href="mailto:info@apptriangle.com">info@apptriangle.com</a>
+                <a
+                  href="mailto:info@apptriangle.com"
+                  className="text-white/50 transition hover:text-(--blue)"
+                >
+                  info@apptriangle.com
+                </a>
               </li>
               <li>
-                <a href="tel:+8801717888388">+880 1717 888 388</a>
+                <a
+                  href="tel:+8801717888388"
+                  className="text-white/50 transition hover:text-(--blue)"
+                >
+                  +880 1717 888 388
+                </a>
               </li>
               <li>
-                <a href="tel:+61427927466">+61 427 927 466</a>
+                <a
+                  href="tel:+61427927466"
+                  className="text-white/50 transition hover:text-(--blue)"
+                >
+                  +61 427 927 466
+                </a>
               </li>
             </ul>
           </div>
         </div>
-        <div className="footer-bottom">
+        <div className="mx-auto flex max-w-290 flex-wrap items-center justify-between gap-4 border-t border-white/10 pt-7 text-[13px]">
           <span>© 2026 Apptriangle Limited. All rights reserved.</span>
-          <span style={{ color: "rgba(255,255,255,0.3)", fontSize: 12 }}>
-            Bangladesh · Australia
-          </span>
+          <span className="text-xs text-white/30">Bangladesh · Australia</span>
         </div>
       </footer>
     </>
