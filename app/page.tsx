@@ -1,8 +1,11 @@
 "use client";
 
 import Image from "next/image";
-import { useEffect, useRef, useState, useSyncExternalStore } from "react";
+import Link from "next/link";
+import { useEffect, useRef, useState } from "react";
 import apptriangleLogo from "../logo/Apptriengle logo.png";
+import landingImage from "../Images/Landing page.jpeg";
+import Reveal from "./components/Reveal"; 
 
 type Service = {
   icon: React.ReactNode;
@@ -36,7 +39,6 @@ type ContactFormState = {
   message: string;
 };
 
-// ─── Data ──────────────────────────────────────────────────────────────────
 const SERVICES: Service[] = [
   {
     icon: (
@@ -144,34 +146,35 @@ const TESTIMONIALS: Testimonial[] = [
   },
 ];
 
-// ─── Hooks ─────────────────────────────────────────────────────────────────
+const NAV_SERVICES = [
+  "Staff Augmentation",
+  "Managed IT Services",
+  "Process Automation",
+  "App Development",
+  "Power Platform",
+  "Technology Consulting",
+  "MVP Development",
+  "AI & ML Solutions",
+  "Business Analytics",
+  "Chatbot Development",
+  "Cybersecurity Services",
+  "Email & Collaboration",
+  "SSL Certificates",
+  "Document Management",
+  "Software Licensing",
+];
+
+const NAV_RESOURCES = ["Case Studies", "Partners", "News & Events", "Blogs"];
+
 function useScrollNav() {
   const [scrolled, setScrolled] = useState(false);
   useEffect(() => {
     const fn = () => setScrolled(window.scrollY > 40);
+    fn(); 
     window.addEventListener("scroll", fn, { passive: true });
     return () => window.removeEventListener("scroll", fn);
   }, []);
   return scrolled;
-}
-
-function useFadeUp() {
-  useEffect(() => {
-    const els = document.querySelectorAll(".fade-up");
-    const obs = new IntersectionObserver(
-      entries => {
-        entries.forEach(entry => {
-          if (entry.isIntersecting) {
-            entry.target.classList.add("visible");
-            obs.unobserve(entry.target);
-          }
-        });
-      },
-      { threshold: 0.12 },
-    );
-    els.forEach(el => obs.observe(el));
-    return () => obs.disconnect();
-  }, []);
 }
 
 function useCounter(target: number, active: boolean) {
@@ -194,7 +197,6 @@ function useCounter(target: number, active: boolean) {
   return val;
 }
 
-// ─── Sub-components ────────────────────────────────────────────────────────
 function StatItem({ num, suffix, label }: Stat) {
   const ref = useRef<HTMLDivElement | null>(null);
   const [active, setActive] = useState(false);
@@ -227,32 +229,39 @@ function StatItem({ num, suffix, label }: Stat) {
   );
 }
 
-// ─── Main Component ─────────────────────────────────────────────────────────
 export default function ApptrianglePage() {
   const scrolled = useScrollNav();
-  useFadeUp();
-  const theme = useSyncExternalStore(
-    onStoreChange => {
-      if (typeof document === "undefined") return () => {};
-      const observer = new MutationObserver(onStoreChange);
-      observer.observe(document.documentElement, {
-        attributes: true,
-        attributeFilter: ["data-theme"],
-      });
-      window.addEventListener("storage", onStoreChange);
-      return () => {
-        observer.disconnect();
-        window.removeEventListener("storage", onStoreChange);
-      };
-    },
-    () => {
-      if (typeof document === "undefined") return "light";
-      return document.documentElement.getAttribute("data-theme") === "dark"
-        ? "dark"
-        : "light";
-    },
-    () => "light",
-  );
+  const [mounted, setMounted] = useState(false);
+  const [theme, setTheme] = useState("light");
+
+  useEffect(() => {
+    setMounted(true); 
+    if (typeof document === "undefined") return;
+    
+    const stored = window.localStorage.getItem("theme");
+    if (stored && stored !== document.documentElement.getAttribute("data-theme")) {
+      document.documentElement.setAttribute("data-theme", stored);
+      window.dispatchEvent(new Event("theme-change"));
+    }
+
+    const updateTheme = () => {
+      setTheme(document.documentElement.getAttribute("data-theme") === "dark" ? "dark" : "light");
+    };
+    updateTheme();
+
+    window.addEventListener("storage", updateTheme);
+    window.addEventListener("theme-change", updateTheme);
+    window.addEventListener("pageshow", updateTheme);
+    window.addEventListener("focus", updateTheme);
+
+    return () => {
+      window.removeEventListener("storage", updateTheme);
+      window.removeEventListener("theme-change", updateTheme);
+      window.removeEventListener("pageshow", updateTheme);
+      window.removeEventListener("focus", updateTheme);
+    };
+  }, []);
+  
   const [form, setForm] = useState<ContactFormState>({
     name: "",
     company: "",
@@ -265,6 +274,8 @@ export default function ApptrianglePage() {
     const nextTheme = theme === "dark" ? "light" : "dark";
     document.documentElement.setAttribute("data-theme", nextTheme);
     window.localStorage.setItem("theme", nextTheme);
+    setTheme(nextTheme); 
+    window.dispatchEvent(new Event("theme-change"));
   };
 
   const navClassName = `fixed top-0 left-0 right-0 z-100 flex h-18 items-center justify-between px-[5vw] transition-[background,box-shadow] duration-300 ${
@@ -274,9 +285,9 @@ export default function ApptrianglePage() {
   }`;
 
   const toggleClassName = `inline-flex items-center gap-2 rounded-full border border-white/20 px-3 py-1.5 text-[11px] font-bold uppercase tracking-widest transition hover:-translate-y-px ${
-    theme === "light"
-      ? "bg-[#1e293b] text-[#f8fafc]"
-      : "bg-[#f1f5f9] text-[#1e293b]"
+    mounted && theme === "dark"
+      ? "bg-[#f1f5f9] text-[#1e293b]"
+      : "bg-[#1e293b] text-[#f8fafc]"
   }`;
 
   const partnerHeight = (name: string) => {
@@ -287,9 +298,8 @@ export default function ApptrianglePage() {
 
   return (
     <>
-      {/* ── NAV ── */}
       <nav className={navClassName}>
-        <a href="#" className="flex items-center gap-2">
+        <Link href="/" className="flex items-center gap-2">
           <Image
             src={apptriangleLogo}
             alt="Apptriangle Logo"
@@ -297,47 +307,91 @@ export default function ApptrianglePage() {
             priority
             sizes="(max-width: 768px) 140px, 200px"
           />
-        </a>
+        </Link>
         <ul className="hidden items-center gap-8 text-sm font-medium text-white/80 lg:flex">
-          <li>
-            <a
-              href="#services"
-              className="transition-colors hover:text-(--blue)"
+          <li className="relative group">
+            <button
+              type="button"
+              aria-haspopup="true"
+              className="inline-flex cursor-default items-center gap-2 transition-colors hover:text-(--blue)"
             >
               Services
-            </a>
+              <span className="text-[10px]">v</span>
+            </button>
+            <div className="pointer-events-none absolute left-1/2 top-full z-20 mt-4 w-64 -translate-x-1/2 rounded-xl border border-white/10 bg-[#0b1628] p-2 text-sm text-white/85 opacity-0 shadow-[0_18px_40px_rgba(8,18,34,0.4)] transition group-hover:pointer-events-auto group-hover:opacity-100">
+              {NAV_SERVICES.map(item => (
+                <Link
+                  key={item}
+                  href="/services"
+                  className="flex items-center justify-between rounded-lg px-3 py-2 text-sm transition hover:bg-white/5 hover:text-white"
+                >
+                  {item}
+                  <span className="text-xs text-white/40">-&gt;</span>
+                </Link>
+              ))}
+            </div>
           </li>
           <li>
-            <a
-              href="#about"
+            <Link
+              href="/products"
               className="transition-colors hover:text-(--blue)"
             >
-              About
-            </a>
+              Products
+            </Link>
+          </li>
+          <li className="relative group">
+            <button
+              type="button"
+              aria-haspopup="true"
+              className="inline-flex cursor-default items-center gap-2 transition-colors hover:text-(--blue)"
+            >
+              Resources
+              <span className="text-[10px]">v</span>
+            </button>
+            <div className="pointer-events-none absolute left-1/2 top-full z-20 mt-4 w-56 -translate-x-1/2 rounded-xl border border-white/10 bg-[#0b1628] p-2 text-sm text-white/85 opacity-0 shadow-[0_18px_40px_rgba(8,18,34,0.4)] transition group-hover:pointer-events-auto group-hover:opacity-100">
+              {NAV_RESOURCES.map(item => (
+                <Link
+                  key={item}
+                  href="/resources"
+                  className="flex items-center justify-between rounded-lg px-3 py-2 text-sm transition hover:bg-white/5 hover:text-white"
+                >
+                  {item}
+                  <span className="text-xs text-white/40">-&gt;</span>
+                </Link>
+              ))}
+            </div>
           </li>
           <li>
-            <a
-              href="#partners"
+            <Link
+              href="/career"
               className="transition-colors hover:text-(--blue)"
             >
-              Partners
-            </a>
+              Career
+            </Link>
           </li>
           <li>
-            <a
-              href="#contact"
+            <Link
+              href="/about-us"
               className="transition-colors hover:text-(--blue)"
             >
-              Contact
-            </a>
+              About Us
+            </Link>
           </li>
           <li>
-            <a
-              href="#contact"
+            <Link
+              href="/contact-us"
+              className="transition-colors hover:text-(--blue)"
+            >
+              Contact Us
+            </Link>
+          </li>
+          <li>
+            <Link
+              href="/contact-us"
               className="rounded-md bg-(--blue) px-5 py-2 text-sm font-semibold text-(--navy) transition hover:-translate-y-px hover:bg-[#4fc5ff]"
             >
               Schedule a Call
-            </a>
+            </Link>
           </li>
         </ul>
         <button
@@ -349,7 +403,7 @@ export default function ApptrianglePage() {
             className="flex h-7 w-7 items-center justify-center rounded-full bg-white text-[#f39a1e] shadow-[0_8px_16px_rgba(12,34,66,0.25)]"
             aria-hidden="true"
           >
-            {theme === "light" ? (
+            {!(mounted && theme === "dark") ? (
               <svg viewBox="0 0 24 24" aria-hidden="true" className="h-4.5 w-4.5 text-black">
                 <path
                   d="M15.5 3.5a8 8 0 1 0 5 13.7 7 7 0 1 1-5-13.7Z"
@@ -377,51 +431,72 @@ export default function ApptrianglePage() {
             )}
           </span>
           <span className="leading-none">
-            {theme === "dark" ? "Light Mode" : "Dark Mode"}
+            {mounted && theme === "dark" ? "Light Mode" : "Dark Mode"}
           </span>
         </button>
       </nav>
 
-      {/* ── HERO ── */}
       <section
         className="relative flex min-h-screen items-center overflow-hidden px-[5vw] pb-20 pt-30"
         style={{ background: "var(--hero-bg)" }}
       >
-        <div className="relative z-10 max-w-160">
-          <div className="mb-7 inline-flex items-center gap-2 rounded-full border border-[rgba(41,179,255,0.3)] bg-[rgba(41,179,255,0.15)] px-4 py-1.5 text-[13px] font-medium text-(--blue)">
-            <span className="h-1.5 w-1.5 rounded-full bg-(--blue) animate-[pulse_2s_infinite]" />
-            7+ Years of Technology Excellence
+        <div className="relative z-10 mx-auto flex w-full max-w-290 flex-col gap-10 sm:gap-12 lg:flex-row-reverse lg:items-center">
+          <div className="relative w-full lg:w-[48%] lg:translate-x-15">
+            <div className="hero-image-float relative overflow-hidden rounded-[32px] border border-[var(--hero-image-border)] bg-[var(--hero-image-bg)] p-3 shadow-[0_24px_60px_rgba(7,18,36,0.25)]">
+              <div className="pointer-events-none absolute inset-0 rounded-[32px] ring-1 ring-white/10" />
+              <div
+                className="hero-image-aurora pointer-events-none absolute -left-12 -top-10 h-44 w-44 rounded-full blur-3xl"
+                style={{ background: "radial-gradient(circle, rgba(41,179,255,0.55) 0%, rgba(41,179,255,0) 70%)" }}
+              />
+              <div
+                className="pointer-events-none absolute -left-8 -top-8 h-28 w-28 rounded-full blur-3xl"
+                style={{ background: "var(--hero-image-glow)" }}
+              />
+              <Image
+                src={landingImage}
+                alt="Apptriangle platform preview"
+                className="relative z-10 h-auto w-full rounded-[28px] object-cover"
+                priority
+                sizes="(max-width: 1024px) 92vw, 44vw"
+              />
+            </div>
           </div>
-          <h1
-            className="mb-6 text-[clamp(44px,6vw,76px)] font-semibold leading-[1.08] text-white"
-            style={{ fontFamily: "var(--font-display)" }}
-          >
-            Technology
-            <br />
-            <span className="text-(--blue)">on Demand</span>
-          </h1>
-          <p className="mb-10 max-w-130 text-lg leading-[1.7] text-white/70">
-            We are a global technology service provider dedicated to empowering
-            businesses with cutting-edge solutions. Our expert team is
-            available 24/7 to attend to your needs.
-          </p>
-          <div className="flex flex-wrap gap-4">
-            <a
-              href="#services"
-              className="inline-flex items-center gap-2 rounded-lg bg-(--blue) px-8 py-3.5 text-[15px] font-semibold text-(--navy) transition hover:-translate-y-0.5 hover:bg-[#4fc5ff] hover:shadow-[0_8px_24px_rgba(41,179,255,0.4)]"
+
+          <div className="relative max-w-160 lg:w-[52%]">
+            <div className="mb-7 inline-flex items-center gap-2 rounded-full border border-[rgba(41,179,255,0.3)] bg-[rgba(41,179,255,0.15)] px-4 py-1.5 text-[13px] font-medium text-(--blue)">
+              <span className="h-1.5 w-1.5 rounded-full bg-(--blue) animate-[pulse_2s_infinite]" />
+              7+ Years of Technology Excellence
+            </div>
+            <h1
+              className="mb-6 text-[clamp(44px,6vw,76px)] font-semibold leading-[1.08] text-white"
+              style={{ fontFamily: "var(--font-display)" }}
             >
-              Explore Our Services →
-            </a>
-            <a
-              href="#contact"
-              className="inline-flex items-center gap-2 rounded-lg border border-white/30 px-8 py-3.5 text-[15px] font-medium text-white transition hover:border-(--blue) hover:bg-[rgba(41,179,255,0.07)] hover:text-(--blue)"
-            >
-              Schedule a Call
-            </a>
+              Technology
+              <br />
+              <span className="text-(--blue)">on Demand</span>
+            </h1>
+            <p className="mb-10 max-w-130 text-lg leading-[1.7] text-white/70">
+              We are a global technology service provider dedicated to empowering
+              businesses with cutting-edge solutions. Our expert team is
+              available 24/7 to attend to your needs.
+            </p>
+            <div className="flex flex-wrap gap-4">
+              <a
+                href="#services"
+                className="inline-flex items-center gap-2 rounded-lg bg-(--blue) px-8 py-3.5 text-[15px] font-semibold text-(--navy) transition hover:-translate-y-0.5 hover:bg-[#4fc5ff] hover:shadow-[0_8px_24px_rgba(41,179,255,0.4)]"
+              >
+                Explore Our Services →
+              </a>
+              <a
+                href="#contact"
+                className="inline-flex items-center gap-2 rounded-lg border border-white/30 px-8 py-3.5 text-[15px] font-medium text-white transition hover:border-(--blue) hover:bg-[rgba(41,179,255,0.07)] hover:text-(--blue)"
+              >
+                Schedule a Call
+              </a>
+            </div>
           </div>
         </div>
 
-        {/* Background grid decoration */}
         <div className="pointer-events-none absolute -right-20 top-1/2 hidden w-[55vw] max-w-175 -translate-y-1/2 opacity-[0.13] lg:block">
           <div className="grid grid-cols-8 gap-4">
             {Array.from({ length: 64 }).map((_, i) => (
@@ -439,10 +514,9 @@ export default function ApptrianglePage() {
 
       </section>
 
-      {/* ── SERVICES ── */}
       <section id="services" className="px-[5vw] py-24">
         <div className="mx-auto max-w-290">
-          <div className="fade-up">
+          <Reveal>
             <h2
               className="mb-4 text-[clamp(32px,4vw,52px)] font-semibold leading-[1.15] text-(--page-text)"
               style={{ fontFamily: "var(--font-display)" }}
@@ -453,8 +527,8 @@ export default function ApptrianglePage() {
               Reliable and innovative services designed for your business
               success, delivered by experts who care.
             </p>
-          </div>
-          <div className="grid grid-cols-1 gap-0.5 overflow-hidden rounded-2xl border border-(--grid-border) bg-(--grid-border) sm:grid-cols-2 lg:grid-cols-3 fade-up">
+          </Reveal>
+          <Reveal className="relative z-10 grid grid-cols-1 gap-0.5 overflow-hidden rounded-2xl border border-(--grid-border) bg-(--grid-border) sm:grid-cols-2 lg:grid-cols-3">
             {SERVICES.map(service => (
               <div
                 key={service.title}
@@ -478,16 +552,15 @@ export default function ApptrianglePage() {
                 </a>
               </div>
             ))}
-          </div>
+          </Reveal>
         </div>
       </section>
 
-      {/* ── ABOUT ── */}
-      <section id="about" className="relative overflow-hidden bg-(--navy) px-[5vw] py-24 text-white">
+      <section id="about" className="relative z-10 overflow-hidden bg-(--navy) px-[5vw] py-24 text-white">
         <div className="absolute -right-50 -top-50 h-150 w-150 rounded-full bg-[radial-gradient(circle,rgba(41,179,255,0.12)_0%,transparent_70%)]" />
         <div className="relative mx-auto max-w-290">
           <div className="grid gap-12 lg:grid-cols-[1fr_1fr] lg:items-center">
-            <div className="fade-up">
+            <Reveal>
               <h2
                 className="mb-4 text-[clamp(32px,4vw,52px)] font-semibold leading-[1.15] text-white"
                 style={{ fontFamily: "var(--font-display)" }}
@@ -523,8 +596,8 @@ export default function ApptrianglePage() {
               >
                 Get in Touch →
               </a>
-            </div>
-            <div className="relative hidden items-center justify-center lg:flex fade-up">
+            </Reveal>
+            <Reveal className="relative hidden items-center justify-center lg:flex">
               <div className="absolute left-1/2 top-1/2 h-100 w-100 -translate-x-1/2 -translate-y-1/2 rounded-full border border-[rgba(41,179,255,0.2)] animate-[spinRing_20s_linear_infinite]" />
               <div
                 className="absolute left-1/2 top-1/2 h-75 w-75 -translate-x-1/2 -translate-y-1/2 rounded-full border border-[rgba(41,179,255,0.2)] animate-[spinRing_15s_linear_infinite]"
@@ -533,25 +606,24 @@ export default function ApptrianglePage() {
               <div className="relative h-85 w-85 [clip-path:polygon(50%_0%,0%_100%,100%_100%)] bg-[linear-gradient(135deg,rgba(41,179,255,0.15),rgba(12,34,66,0.5))]">
                 <div className="absolute left-1/2 top-7.5 h-40 w-40 -translate-x-1/2 [clip-path:polygon(50%_0%,0%_100%,100%_100%)] bg-(--blue) opacity-20" />
               </div>
-            </div>
+            </Reveal>
           </div>
         </div>
       </section>
 
-      {/* ── PARTNERS ── */}
       <section id="partners" className="bg-(--surface-alt) px-[5vw] py-24">
         <div className="mx-auto max-w-290">
-          <div className="fade-up text-center mb-12">
+          <Reveal className="text-center mb-12">
             <h2
               className="mx-auto text-[clamp(32px,4vw,52px)] font-semibold leading-[1.15] text-(--page-text)"
               style={{ fontFamily: "var(--font-display)" }}
             >
               Our Partners
             </h2>
-          </div>
+          </Reveal>
         </div>
-        <div
-          className="fade-up overflow-hidden"
+        <Reveal
+          className="overflow-hidden"
           style={{
             maskImage:
               "linear-gradient(90deg,transparent,black 10%,black 90%,transparent)",
@@ -577,25 +649,24 @@ export default function ApptrianglePage() {
               </div>
             ))}
           </div>
-        </div>
+        </Reveal>
       </section>
 
-      {/* ── TESTIMONIALS ── */}
-      <section className="bg-(--surface) px-[5vw] py-24">
+      <section className="relative z-10 bg-(--surface) px-[5vw] py-24">
         <div className="mx-auto max-w-290">
-          <div className="fade-up text-center mb-14">
+          <Reveal className="text-center mb-14">
             <h2
               className="text-[clamp(32px,4vw,52px)] font-semibold leading-[1.15] text-(--page-text)"
               style={{ fontFamily: "var(--font-display)" }}
             >
               What Our Clients Say
             </h2>
-          </div>
+          </Reveal>
           <div className="grid gap-6 lg:grid-cols-3">
             {TESTIMONIALS.map((testimonial, i) => (
-              <div
+              <Reveal
                 key={i}
-                className="relative rounded-2xl border border-(--border) bg-(--surface) p-9 fade-up"
+                className="relative z-10 rounded-2xl border border-(--border) bg-(--surface) p-9"
                 style={{ transitionDelay: `${i * 0.1}s` }}
               >
                 <span
@@ -623,14 +694,13 @@ export default function ApptrianglePage() {
                     </div>
                   </div>
                 </div>
-              </div>
+              </Reveal>
             ))}
           </div>
         </div>
       </section>
 
-      {/* ── CTA BANNER ── */}
-      <section className="relative overflow-hidden bg-[linear-gradient(135deg,var(--navy)_0%,#1a3a6b_100%)] px-[5vw] py-24 text-center">
+      <section className="relative z-10 overflow-hidden bg-[linear-gradient(135deg,var(--navy)_0%,#1a3a6b_100%)] px-[5vw] py-24 text-center">
         <div className="absolute -left-50 -top-50 h-125 w-125 rounded-full bg-[radial-gradient(circle,rgba(41,179,255,0.15)_0%,transparent_70%)]" />
         <div className="absolute -bottom-37.5 -right-25 h-100 w-100 rounded-full bg-[radial-gradient(circle,rgba(41,179,255,0.1)_0%,transparent_70%)]" />
         <div className="relative mx-auto max-w-290">
@@ -663,11 +733,10 @@ export default function ApptrianglePage() {
         </div>
       </section>
 
-      {/* ── CONTACT ── */}
       <section id="contact" className="px-[5vw] py-24">
         <div className="mx-auto max-w-290">
           <div className="grid gap-12 lg:grid-cols-[1fr_1.2fr]">
-            <div className="fade-up">
+            <Reveal>
               <span className="mb-4 inline-block text-[13px] font-semibold uppercase tracking-widest text-(--blue)">
                 Get in Touch
               </span>
@@ -733,8 +802,8 @@ export default function ApptrianglePage() {
                   </div>
                 </div>
               </div>
-            </div>
-            <div className="rounded-2xl bg-(--surface-alt) p-10 fade-up">
+            </Reveal>
+            <Reveal className="relative z-10 rounded-2xl bg-(--surface-alt) p-10">
               <div className="grid gap-4 sm:grid-cols-2">
                 <div className="mb-5">
                   <label className="mb-2 block text-[13px] font-medium text-(--page-text)">
@@ -811,13 +880,12 @@ export default function ApptrianglePage() {
               <button className="w-full rounded-lg bg-(--navy) py-3.5 text-[15px] font-semibold text-white transition hover:-translate-y-0.5 hover:bg-[#1a3a6b]">
                 Send Message →
               </button>
-            </div>
+            </Reveal>
           </div>
         </div>
       </section>
 
-      {/* ── FOOTER ── */}
-      <footer className="bg-[#07152e] px-[5vw] pb-8 pt-16 text-white/60">
+      <footer className="relative z-10 bg-[#07152e] px-[5vw] pb-8 pt-16 text-white/60">
         <div className="mx-auto mb-12 grid max-w-290 gap-12 sm:grid-cols-2 lg:grid-cols-[2fr_1fr_1fr_1fr]">
           <div>
             <div className="flex items-center gap-2">

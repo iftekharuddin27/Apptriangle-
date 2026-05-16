@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import Script from "next/script";
 import "./globals.css";
+import CustomCursor from "./components/CustomCursor";
+import NeuralCanvas from "./components/NeuralCanvas"; // Import it here
 
 export const metadata: Metadata = {
   title: "Apptriangle",
@@ -26,6 +28,10 @@ export default function RootLayout({
   } catch (e) {}
 })();`}
         </Script>
+        
+        <CustomCursor />
+        <NeuralCanvas /> {/* Put it globally here */}
+        
         {children}
       </body>
     </html>
