@@ -15,15 +15,14 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" data-theme="light" suppressHydrationWarning>
+    <html lang="en" data-theme="dark" suppressHydrationWarning>
       <head />
       <body>
         <Script id="theme-init" strategy="beforeInteractive">
           {`(function(){
   try {
     var stored = localStorage.getItem('theme');
-    var prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-    var theme = stored || (prefersDark ? 'dark' : 'light');
+    var theme = stored || 'dark';
     document.documentElement.setAttribute('data-theme', theme);
   } catch (e) {}
 })();`}

@@ -84,21 +84,23 @@ export default function AboutUsPage() {
 			};
 		},
 		() => {
-			if (typeof document === "undefined") return "light";
+			if (typeof document === "undefined") return "dark";
 			return document.documentElement.getAttribute("data-theme") === "dark"
 				? "dark"
 				: "light";
 		},
-		() => "light",
+		() => "dark",
 	);
 
 	useEffect(() => {
 		if (typeof document === "undefined") return;
 		const stored = window.localStorage.getItem("theme");
-		if (stored && stored !== document.documentElement.getAttribute("data-theme")) {
-			document.documentElement.setAttribute("data-theme", stored);
+		const initialTheme = stored || "dark";
+		if (initialTheme !== document.documentElement.getAttribute("data-theme")) {
+			document.documentElement.setAttribute("data-theme", initialTheme);
 			window.dispatchEvent(new Event("theme-change"));
 		}
+		if (!stored) window.localStorage.setItem("theme", "dark");
 	}, []);
 
 	const toggleTheme = () => {
@@ -108,17 +110,13 @@ export default function AboutUsPage() {
 		window.dispatchEvent(new Event("theme-change"));
 	};
 
-	const navClassName = `fixed top-0 left-0 right-0 z-100 flex h-18 items-center justify-between px-[5vw] transition-[background,box-shadow] duration-300 ${
+	const navClassName = `fixed top-0 left-0 right-0 z-100 grid h-18 grid-cols-[auto_1fr_auto] items-center pl-[3.5vw] pr-[2.6vw] transition-[background,box-shadow] duration-300 ${
 		scrolled
 			? "bg-[rgba(12,34,66,0.96)] backdrop-blur-md shadow-[0_2px_24px_rgba(41,179,255,0.12)]"
 			: "bg-transparent"
 	}`;
 
-	const toggleClassName = `inline-flex items-center gap-2 rounded-full border border-white/20 px-3 py-1.5 text-[11px] font-bold uppercase tracking-widest transition hover:-translate-y-px ${
-		theme === "light"
-			? "bg-[#1e293b] text-[#f8fafc]"
-			: "bg-[#f1f5f9] text-[#1e293b]"
-	}`;
+	const toggleClassName = "inline-flex h-10 w-10 items-center justify-center justify-self-end rounded-full border border-white/20 bg-transparent transition hover:-translate-y-px";
 
 	return (
 		<>
@@ -132,7 +130,7 @@ export default function AboutUsPage() {
 						sizes="(max-width: 768px) 140px, 200px"
 					/>
 				</a>
-				<ul className="hidden items-center gap-8 text-sm font-medium text-white/80 lg:flex">
+				<ul className="hidden items-center gap-6 text-sm font-medium text-white/80 lg:flex lg:justify-self-center">
 					<li className="relative group">
 						<button
 							type="button"
@@ -209,22 +207,12 @@ export default function AboutUsPage() {
 							Contact Us
 						</a>
 					</li>
-					<li>
-						<a
-							href="/contact-us"
-							className="rounded-md bg-(--blue) px-5 py-2 text-sm font-semibold text-(--navy) transition hover:-translate-y-px hover:bg-[#4fc5ff]"
-						>
-							Schedule a Call
-						</a>
-					</li>
 				</ul>
-				<button type="button" className={toggleClassName} onClick={toggleTheme}>
-					<span
-						className="flex h-7 w-7 items-center justify-center rounded-full bg-white text-[#f39a1e] shadow-[0_8px_16px_rgba(12,34,66,0.25)]"
-						aria-hidden="true"
-					>
-						{theme === "light" ? (
-							<svg viewBox="0 0 24 24" aria-hidden="true" className="h-4.5 w-4.5 text-black">
+				<div className="flex items-center justify-self-end gap-3">
+					<button type="button" className={toggleClassName} onClick={toggleTheme} aria-label={theme === "dark" ? "Dark mode" : "Light mode"}>
+						<span className={`flex h-7 w-7 items-center justify-center rounded-full ${theme === "dark" ? "bg-white text-[#0f223a]" : "bg-[#0f223a] text-white"}`}>
+						{theme !== "dark" ? (
+							<svg viewBox="0 0 24 24" aria-hidden="true" className="h-5 w-5">
 								<path
 									d="M15.5 3.5a8 8 0 1 0 5 13.7 7 7 0 1 1-5-13.7Z"
 									fill="currentColor"
@@ -239,7 +227,7 @@ export default function AboutUsPage() {
 								/>
 							</svg>
 						) : (
-							<svg viewBox="0 0 24 24" aria-hidden="true" className="h-4.5 w-4.5 text-black">
+							<svg viewBox="0 0 24 24" aria-hidden="true" className="h-5 w-5">
 								<circle cx="12" cy="12" r="5" fill="currentColor" />
 								<path
 									d="M12 2.5v3M12 18.5v3M4.5 12h3M16.5 12h3M5.2 5.2l2.1 2.1M16.7 16.7l2.1 2.1M18.8 5.2l-2.1 2.1M7.3 16.7l-2.1 2.1"
@@ -249,11 +237,15 @@ export default function AboutUsPage() {
 								/>
 							</svg>
 						)}
-					</span>
-					<span className="leading-none">
-						{theme === "dark" ? "Light Mode" : "Dark Mode"}
-					</span>
-				</button>
+							</span>
+					</button>
+					<a
+						href="/contact-us"
+						className="hidden rounded-md bg-(--blue) px-5 py-2 text-sm font-semibold text-(--navy) transition hover:-translate-y-px hover:bg-[#4fc5ff] lg:inline-flex"
+					>
+						Schedule a Call
+					</a>
+				</div>
 			</nav>
 
 			<main className="min-h-screen bg-[radial-gradient(circle_at_top,#0d1c2a_0%,#070e18_45%,#050b16_100%)] px-[5vw] pb-20 pt-32 text-white">
