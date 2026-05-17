@@ -146,25 +146,30 @@ const TESTIMONIALS: Testimonial[] = [
   },
 ];
 
-const NAV_SERVICES = [
-  "Staff Augmentation",
-  "Managed IT Services",
-  "Process Automation",
-  "App Development",
-  "Power Platform",
-  "Technology Consulting",
-  "MVP Development",
-  "AI & ML Solutions",
-  "Business Analytics",
-  "Chatbot Development",
-  "Cybersecurity Services",
-  "Email & Collaboration",
-  "SSL Certificates",
-  "Document Management",
-  "Software Licensing",
+const NAV_SERVICES: { label: string; slug: string }[] = [
+  { label: "Staff Augmentation", slug: "staff-augmentation" },
+  { label: "Managed IT Services", slug: "managed-it-services" },
+  { label: "Process Automation", slug: "process-automation" },
+  { label: "App Development", slug: "app-development" },
+  { label: "Power Platform", slug: "power-platform" },
+  { label: "Technology Consulting", slug: "technology-consulting" },
+  { label: "MVP Development", slug: "mvp-development" },
+  { label: "AI & ML Solutions", slug: "ai-ml-solutions" },
+  { label: "Business Analytics", slug: "business-analytics" },
+  { label: "Chatbot Development", slug: "chatbot-development" },
+  { label: "Cybersecurity Services", slug: "cybersecurity-services" },
+  { label: "Email & Collaboration", slug: "email-collaboration" },
+  { label: "SSL Certificates", slug: "ssl-certificates" },
+  { label: "Document Management", slug: "document-management" },
+  { label: "Software Licensing", slug: "software-licensing" },
 ];
 
-const NAV_RESOURCES = ["Case Studies", "Partners", "News & Events", "Blogs"];
+const NAV_RESOURCES: { label: string; slug: string }[] = [
+  { label: "Case Studies", slug: "case-studies" },
+  { label: "Partners", slug: "partners" },
+  { label: "News & Events", slug: "news-events" },
+  { label: "Blogs", slug: "blogs" },
+];
 
 function useScrollNav() {
   const [scrolled, setScrolled] = useState(false);
@@ -319,11 +324,11 @@ export default function ApptrianglePage() {
             <div className="pointer-events-none absolute left-1/2 top-full z-20 mt-4 w-64 -translate-x-1/2 rounded-xl border border-white/10 bg-[#0b1628] p-2 text-sm text-white/85 opacity-0 shadow-[0_18px_40px_rgba(8,18,34,0.4)] transition group-hover:pointer-events-auto group-hover:opacity-100">
               {NAV_SERVICES.map(item => (
                 <Link
-                  key={item}
-                  href="/services"
+                  key={item.slug}
+                  href={`/services/${item.slug}`}
                   className="flex items-center justify-between rounded-lg px-3 py-2 text-sm transition hover:bg-white/5 hover:text-white"
                 >
-                  {item}
+                  {item.label}
                   <span className="text-xs text-white/40">-&gt;</span>
                 </Link>
               ))}
@@ -349,11 +354,11 @@ export default function ApptrianglePage() {
             <div className="pointer-events-none absolute left-1/2 top-full z-20 mt-4 w-56 -translate-x-1/2 rounded-xl border border-white/10 bg-[#0b1628] p-2 text-sm text-white/85 opacity-0 shadow-[0_18px_40px_rgba(8,18,34,0.4)] transition group-hover:pointer-events-auto group-hover:opacity-100">
               {NAV_RESOURCES.map(item => (
                 <Link
-                  key={item}
-                  href="/resources"
+                  key={item.slug}
+                  href={`/resources/${item.slug}`}
                   className="flex items-center justify-between rounded-lg px-3 py-2 text-sm transition hover:bg-white/5 hover:text-white"
                 >
-                  {item}
+                  {item.label}
                   <span className="text-xs text-white/40">-&gt;</span>
                 </Link>
               ))}
